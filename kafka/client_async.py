@@ -845,6 +845,11 @@ class KafkaClient(object):
             log.debug("Sending metadata request %s to node %s", request, node_id)
             future = self.send(node_id, request, wakeup=wakeup)
             future.add_callback(self.cluster.update_metadata)
+            if self.config["keep_warm"] > 1:
+                def keep_connections_warm(cluster):
+                    for broker in cluster.brokers():
+                        self.maybe_connect(broker.nodeId, wakeup=wakeup)
+                self.cluster.add_listener(keep_connections_warm)
             future.add_errback(self.cluster.failed_update)
 
             self._metadata_refresh_in_progress = True
