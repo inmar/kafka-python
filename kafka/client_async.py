@@ -154,6 +154,13 @@ class KafkaClient(object):
             sasl mechanism handshake. Default: one of bootstrap servers
         sasl_oauth_token_provider (AbstractTokenProvider): OAuthBearer token provider
             instance. (See kafka.oauth.abstract). Default: None
+        keep_warm (int): The level of extra work to do to keep connections warm.
+            0: Nothing extra. After bootstrapping, no extra connections will be
+                made, and idle connections will be closed.
+            1: In addition to (1), reopen idle connections after closing (after
+                connections_max_idle_ms)
+            2: After bootstrapping, connect to all leader brokers immediately
+                rather than waiting for first send.
     """
 
     DEFAULT_CONFIG = {
@@ -192,7 +199,8 @@ class KafkaClient(object):
         'sasl_plain_password': None,
         'sasl_kerberos_service_name': 'kafka',
         'sasl_kerberos_domain_name': None,
-        'sasl_oauth_token_provider': None
+        'sasl_oauth_token_provider': None,
+        'keep_warm': 0,
     }
 
     def __init__(self, **configs):
@@ -951,6 +959,10 @@ class KafkaClient(object):
             idle_ms = (time.time() - ts) * 1000
             log.info('Closing idle connection %s, last active %d ms ago', conn_id, idle_ms)
             self.close(node_id=conn_id)
+
+            if self.config['keep_warm'] > 0:
+                log.info('Reopening idle connection %s', conn_id)
+                self._maybe_connect(node_id=conn_id)
 
     def bootstrap_connected(self):
         """Return True if a bootstrap node is connected"""
