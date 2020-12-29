@@ -284,10 +284,9 @@ class KafkaProducer(object):
         keep_warm (int): The level of extra work to do to keep connections warm.
             0: Nothing extra. After bootstrapping, no extra connections will be
                 made, and idle connections will be closed.
-            1: In addition to (1), reopen idle connections after closing (after
-                connections_max_idle_ms)
-            2: After bootstrapping, connect to all leader brokers immediately
-                rather than waiting for first send.
+            1: Reopen idle connections after closing (after connections_max_idle_ms)
+            2: In addition to (1), after bootstrapping, connect to all leader brokers 
+                immediately rather than waiting for first send.
 
     Note:
         Configuration parameters are described in more detail at
