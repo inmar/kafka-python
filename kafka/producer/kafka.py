@@ -281,6 +281,12 @@ class KafkaProducer(object):
         sasl_oauth_token_provider (AbstractTokenProvider): OAuthBearer token provider
             instance. (See kafka.oauth.abstract). Default: None
         kafka_client (callable): Custom class / callable for creating KafkaClient instances
+        keep_warm (int): The level of extra work to do to keep connections warm.
+            0: Nothing extra. After bootstrapping, no extra connections will be
+                made, and idle connections will be closed.
+            1: Reopen idle connections after closing (after connections_max_idle_ms)
+            2: In addition to (1), after bootstrapping, connect to all leader brokers 
+                immediately rather than waiting for first send.
 
     Note:
         Configuration parameters are described in more detail at
@@ -335,6 +341,7 @@ class KafkaProducer(object):
         'sasl_kerberos_domain_name': None,
         'sasl_oauth_token_provider': None,
         'kafka_client': KafkaClient,
+        'keep_warm': 0,
     }
 
     _COMPRESSORS = {
